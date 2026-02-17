@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import type { SalesRow } from "../../types/sales";
+import { validateSalesRows } from "./validate";
 
 export function parseSalesCsv(csvText: string): SalesRow[] {
   const parsed = Papa.parse(csvText, {
@@ -18,11 +19,13 @@ export function parseSalesCsv(csvText: string): SalesRow[] {
     sales: Number(r.sales),
   }));
 
-  // basic cleanup
   const cleaned = rows
     .filter((r) => r.date && Number.isFinite(r.sales))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  if (!cleaned.length) throw new Error("No valid rows found. Expected columns: date,sales");
-  return cleaned;
+  if (!cleaned.length) {
+    throw new Error("No valid rows found. Expected columns: date,sales");
+  }
+
+  return validateSalesRows(cleaned);
 }
