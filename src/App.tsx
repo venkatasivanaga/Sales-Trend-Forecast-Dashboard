@@ -2,11 +2,13 @@ import "./App.css";
 import { useState } from "react";
 import type { SalesRow } from "./types/sales";
 import { parseSalesCsv } from "./features/data/parseCsv";
+import { FileDropzone } from "./components/FileDropzone";
 
 export default function App() {
   const [data, setData] = useState<SalesRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingSample, setLoadingSample] = useState(false);
+  const [filename, setFilename] = useState<string | null>(null);
 
   async function loadSample() {
     setError(null);
@@ -17,12 +19,20 @@ export default function App() {
       const text = await res.text();
       const rows = parseSalesCsv(text);
       setData(rows);
+      setFilename("sample-data.csv");
     } catch (e: any) {
       setError(e?.message ?? "Something went wrong");
       setData(null);
+      setFilename(null);
     } finally {
       setLoadingSample(false);
     }
+  }
+
+  function clearData() {
+    setData(null);
+    setFilename(null);
+    setError(null);
   }
 
   return (
@@ -74,14 +84,42 @@ export default function App() {
             </div>
           )}
 
-          <div className="mt-6 rounded-xl border border-dashed bg-neutral-50 p-6">
-            {!data ? (
-              <p className="text-sm text-neutral-600">
-                (Next) File upload dropzone will go here.
-              </p>
-            ) : (
-              <div className="text-sm text-neutral-700">
-                Loaded <span className="font-semibold">{data.length}</span> rows.
+          <div className="mt-6">
+            <FileDropzone
+              onTextLoaded={(text, name) => {
+                setError(null);
+                try {
+                  const rows = parseSalesCsv(text);
+                  setData(rows);
+                  setFilename(name ?? "uploaded.csv");
+                } catch (e: any) {
+                  setError(e?.message ?? "Invalid CSV");
+                  setData(null);
+                  setFilename(null);
+                }
+              }}
+              onError={(msg) => {
+                setError(msg);
+                setData(null);
+                setFilename(null);
+              }}
+            />
+
+            {data && (
+              <div className="mt-4 rounded-xl border bg-white p-4 text-sm text-neutral-700">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    Loaded <span className="font-semibold">{data.length}</span> rows
+                    {filename ? <span className="text-neutral-500"> • {filename}</span> : null}
+                  </div>
+                  <button
+                    className="text-sm underline underline-offset-4 text-neutral-700 hover:text-neutral-900"
+                    onClick={clearData}
+                  >
+                    Clear
+                  </button>
+                </div>
+
                 <div className="mt-2 text-xs text-neutral-500">
                   First date: {data[0].date} • Last date: {data[data.length - 1].date}
                 </div>
