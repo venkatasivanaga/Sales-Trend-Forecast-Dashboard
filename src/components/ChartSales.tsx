@@ -19,15 +19,16 @@ export function ChartSales({ data }: { data: SalesRow[] }) {
       <div className="flex items-center justify-between">
         <div>
           <div className="text-sm font-semibold">Sales trend</div>
-          <div className="mt-1 text-xs text-neutral-500">
-            Daily sales over time
-          </div>
+          <div className="mt-1 text-xs text-neutral-500">Daily sales over time</div>
         </div>
       </div>
 
       <div className="mt-4 h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" tickMargin={8} minTickGap={24} />
             <YAxis tickFormatter={formatNumber} width={70} />
@@ -44,4 +45,7 @@ export function ChartSales({ data }: { data: SalesRow[] }) {
             />
           </LineChart>
         </ResponsiveContainer>
-      </div
+      </div>
+    </div>
+  );
+}

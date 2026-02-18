@@ -4,6 +4,9 @@ import type { SalesRow } from "./types/sales";
 import { parseSalesCsv } from "./features/data/parseCsv";
 import { FileDropzone } from "./components/FileDropzone";
 import { ChartSales } from "./components/ChartSales";
+import { KpiGrid } from "./components/KpiGrid";
+import { computeSalesKpis } from "./features/data/kpis";
+
 
 export default function App() {
   const [data, setData] = useState<SalesRow[] | null>(null);
