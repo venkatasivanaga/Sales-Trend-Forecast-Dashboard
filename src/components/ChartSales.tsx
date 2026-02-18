@@ -1,4 +1,3 @@
-import type { SalesRow } from "../types/sales";
 import {
   ResponsiveContainer,
   LineChart,
@@ -9,26 +8,30 @@ import {
   CartesianGrid,
 } from "recharts";
 
+type Row = {
+  date: string;
+  actual?: number;
+  forecast?: number;
+  sales?: number; // for backward compatibility if needed
+};
+
 function formatNumber(n: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
 }
 
-export function ChartSales({ data }: { data: SalesRow[] }) {
+export function ChartSales({ data }: { data: Row[] }) {
   return (
     <div className="rounded-2xl border bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm font-semibold">Sales trend</div>
-          <div className="mt-1 text-xs text-neutral-500">Daily sales over time</div>
+      <div>
+        <div className="text-sm font-semibold">Sales trend</div>
+        <div className="mt-1 text-xs text-neutral-500">
+          Actual vs forecast
         </div>
       </div>
 
       <div className="mt-4 h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
-          >
+          <LineChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" tickMargin={8} minTickGap={24} />
             <YAxis tickFormatter={formatNumber} width={70} />
@@ -36,12 +39,26 @@ export function ChartSales({ data }: { data: SalesRow[] }) {
               formatter={(value: any) => formatNumber(Number(value))}
               labelFormatter={(label) => `Date: ${label}`}
             />
+
+            {/* Actual line (uses actual or sales) */}
             <Line
               type="monotone"
-              dataKey="sales"
+              dataKey={(d: any) => d.actual ?? d.sales}
+              name="Actual"
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
+            />
+
+            {/* Forecast line */}
+            <Line
+              type="monotone"
+              dataKey="forecast"
+              name="Forecast"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+              strokeDasharray="6 4"
             />
           </LineChart>
         </ResponsiveContainer>

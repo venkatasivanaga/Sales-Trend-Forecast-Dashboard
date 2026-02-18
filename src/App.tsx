@@ -7,7 +7,7 @@ import { ChartSales } from "./components/ChartSales";
 import { KpiGrid } from "./components/KpiGrid";
 import { computeSalesKpis } from "./features/data/kpis";
 import { aggregateSales, type Granularity } from "./features/data/aggregate";
-
+import { makeMovingAverageForecast } from "./features/forecast/movingAverage";
 
 
 export default function App() {
@@ -16,7 +16,10 @@ export default function App() {
   const [loadingSample, setLoadingSample] = useState(false);
   const [filename, setFilename] = useState<string | null>(null);
   const [granularity, setGranularity] = useState<Granularity>("daily");
-  const chartData = data ? aggregateSales(data, granularity) : null;
+  const base = data ? aggregateSales(data, granularity) : null;
+  const plotData = base ? makeMovingAverageForecast(base, horizon, window) : null;
+  const [horizon, setHorizon] = useState(14);
+  const [window, setWindow] = useState(7);
 
   async function loadSample() {
     setError(null);
@@ -131,6 +134,40 @@ export default function App() {
                     <option value="monthly">Monthly</option>
                   </select>
                 </label>
+              </div>
+            )}
+
+            {data && (
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <label className="text-sm text-neutral-600">
+                  Horizon (days)
+                  <input
+                    className="mt-1 w-full rounded-xl border px-3 py-2"
+                    type="number"
+                    min={1}
+                    max={90}
+                    value={horizon}
+                    onChange={(e) => setHorizon(Number(e.target.value))}
+                  />
+                </label>
+
+                <label className="text-sm text-neutral-600">
+                  Moving avg window
+                  <input
+                    className="mt-1 w-full rounded-xl border px-3 py-2"
+                    type="number"
+                    min={2}
+                    max={60}
+                    value={window}
+                    onChange={(e) => setWindow(Number(e.target.value))}
+                  />
+                </label>
+
+                <div className="text-sm text-neutral-600 flex items-end">
+                  <div className="rounded-xl border bg-white px-3 py-2 w-full">
+                    Forecast: simple moving average
+                  </div>
+                </div>
               </div>
             )}
 
