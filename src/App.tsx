@@ -104,6 +104,11 @@ export default function App() {
                 setFilename(null);
               }}
             />
+            {data && (
+              <div className="mt-6">
+                <KpiGrid kpis={computeSalesKpis(data)} />
+              </div>
+            )}
 
             {data && (
               <div className="mt-4 rounded-xl border bg-white p-4 text-sm text-neutral-700">
