@@ -6,6 +6,8 @@ import { FileDropzone } from "./components/FileDropzone";
 import { ChartSales } from "./components/ChartSales";
 import { KpiGrid } from "./components/KpiGrid";
 import { computeSalesKpis } from "./features/data/kpis";
+import { aggregateSales, type Granularity } from "./features/data/aggregate";
+
 
 
 export default function App() {
@@ -13,6 +15,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [loadingSample, setLoadingSample] = useState(false);
   const [filename, setFilename] = useState<string | null>(null);
+  const [granularity, setGranularity] = useState<Granularity>("daily");
+  const chartData = data ? aggregateSales(data, granularity) : null;
 
   async function loadSample() {
     setError(null);
@@ -108,6 +112,28 @@ export default function App() {
                 setFilename(null);
               }}
             />
+
+            {data && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-neutral-600">
+                  Viewing: <span className="font-medium text-neutral-900">{granularity}</span>
+                </div>
+
+                <label className="text-sm text-neutral-600">
+                  Granularity{" "}
+                  <select
+                    className="ml-2 rounded-xl border px-3 py-2 text-sm"
+                    value={granularity}
+                    onChange={(e) => setGranularity(e.target.value as Granularity)}
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </label>
+              </div>
+            )}
+
             {data && (
               <div className="mt-6">
                 <KpiGrid kpis={computeSalesKpis(data)} />
@@ -115,7 +141,7 @@ export default function App() {
             )}
             {data && (
               <div className="mt-6">
-                <ChartSales data={data} />
+                {chartData && <ChartSales data={chartData} />}
               </div>
             )}
 
