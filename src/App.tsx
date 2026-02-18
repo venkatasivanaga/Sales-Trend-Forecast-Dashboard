@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { SalesRow } from "./types/sales";
 import { parseSalesCsv } from "./features/data/parseCsv";
 import { FileDropzone } from "./components/FileDropzone";
+import { ChartSales } from "./components/ChartSales";
 
 export default function App() {
   const [data, setData] = useState<SalesRow[] | null>(null);
@@ -107,6 +108,11 @@ export default function App() {
             {data && (
               <div className="mt-6">
                 <KpiGrid kpis={computeSalesKpis(data)} />
+              </div>
+            )}
+            {data && (
+              <div className="mt-6">
+                <ChartSales data={data} />
               </div>
             )}
 
