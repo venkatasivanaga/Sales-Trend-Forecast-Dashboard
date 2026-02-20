@@ -1,18 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import "tailwindcss";
 
 /* Minimal classic defaults */
-:root {
-  color-scheme: light;
-}
+:root { color-scheme: light; }
 
-html, body, #root {
-  height: 100%;
-}
+html, body, #root { height: 100%; }
 
-body {
-  margin: 0;
-}
+body { margin: 0; }
