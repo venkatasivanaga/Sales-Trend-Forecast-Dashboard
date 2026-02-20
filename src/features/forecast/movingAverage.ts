@@ -1,4 +1,5 @@
 import type { SalesRow } from "../../types/sales";
+import type { Granularity } from "../data/aggregate";
 
 export type ForecastPoint = {
   date: string;
@@ -12,10 +13,47 @@ function addDays(dateStr: string, days: number) {
   return d.toISOString().slice(0, 10);
 }
 
+function addMonths(ym: string, monthsToAdd: number) {
+  const [y, m] = ym.split("-").map(Number); // YYYY-MM
+  const d = new Date(Date.UTC(y, m - 1, 1));
+  d.setUTCMonth(d.getUTCMonth() + monthsToAdd);
+  const yy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  return `${yy}-${mm}`;
+}
+
+function addWeeks(isoWeek: string, weeksToAdd: number) {
+  // format: YYYY-Www
+  const [yPart, wPart] = isoWeek.split("-W");
+  let year = Number(yPart);
+  let week = Number(wPart);
+
+  week += weeksToAdd;
+
+  // normalize week overflow/underflow (approx, good enough for UI)
+  // 53-week years exist; we'll clamp using 52 to avoid complex calendar logic.
+  while (week > 52) {
+    week -= 52;
+    year += 1;
+  }
+  while (week < 1) {
+    week += 52;
+    year -= 1;
+  }
+  return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
+function nextKey(lastKey: string, g: Granularity, i: number) {
+  if (g === "daily") return addDays(lastKey, i);
+  if (g === "weekly") return addWeeks(lastKey, i);
+  return addMonths(lastKey, i); // monthly: YYYY-MM
+}
+
 export function makeMovingAverageForecast(
   rows: SalesRow[],
   horizon: number,
-  window: number
+  window: number,
+  granularity: Granularity
 ): ForecastPoint[] {
   const data = [...rows].sort((a, b) => a.date.localeCompare(b.date));
   const n = data.length;
@@ -24,7 +62,7 @@ export function makeMovingAverageForecast(
   const values = data.map((r) => r.sales);
   const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
-  const lastDate = data[n - 1].date;
+  const lastKey = data[n - 1].date;
 
   // actual points
   const out: ForecastPoint[] = data.map((r) => ({
@@ -32,13 +70,13 @@ export function makeMovingAverageForecast(
     actual: r.sales,
   }));
 
-  // forecast points beyond last date
+  // forecast points beyond last key
   for (let i = 1; i <= horizon; i++) {
     const start = Math.max(0, values.length - window);
     const ma = avg(values.slice(start));
-    const nextDate = addDays(lastDate, i);
+    const nextDate = nextKey(lastKey, granularity, i);
 
-    values.push(ma); // roll forward using predicted value
+    values.push(ma);
     out.push({ date: nextDate, forecast: ma });
   }
 

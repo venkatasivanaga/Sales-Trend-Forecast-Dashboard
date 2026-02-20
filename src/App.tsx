@@ -21,7 +21,7 @@ export default function App() {
   const [window, setWindow] = useState(7);
 
   const base = data ? aggregateSales(data, granularity) : null;
-  const plotData = base ? makeMovingAverageForecast(base, horizon, window) : null;
+  const plotData = base ? makeMovingAverageForecast(base, horizon, window, granularity) : null;
 
   async function loadSample() {
     setError(null);
