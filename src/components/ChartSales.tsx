@@ -12,7 +12,7 @@ type Row = {
   date: string;
   actual?: number;
   forecast?: number;
-  sales?: number; // for backward compatibility if needed
+  sales?: number; // fallback
 };
 
 function formatNumber(n: number) {
@@ -24,9 +24,7 @@ export function ChartSales({ data }: { data: Row[] }) {
     <div className="rounded-2xl border bg-white p-4 shadow-sm">
       <div>
         <div className="text-sm font-semibold">Sales trend</div>
-        <div className="mt-1 text-xs text-neutral-500">
-          Actual vs forecast
-        </div>
+        <div className="mt-1 text-xs text-neutral-500">Actual vs forecast</div>
       </div>
 
       <div className="mt-4 h-72">
@@ -40,7 +38,6 @@ export function ChartSales({ data }: { data: Row[] }) {
               labelFormatter={(label) => `Date: ${label}`}
             />
 
-            {/* Actual line (uses actual or sales) */}
             <Line
               type="monotone"
               dataKey={(d: any) => d.actual ?? d.sales}
@@ -50,7 +47,6 @@ export function ChartSales({ data }: { data: Row[] }) {
               isAnimationActive={false}
             />
 
-            {/* Forecast line */}
             <Line
               type="monotone"
               dataKey="forecast"

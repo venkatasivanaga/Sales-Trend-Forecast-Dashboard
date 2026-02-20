@@ -15,11 +15,13 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [loadingSample, setLoadingSample] = useState(false);
   const [filename, setFilename] = useState<string | null>(null);
+
   const [granularity, setGranularity] = useState<Granularity>("daily");
-  const base = data ? aggregateSales(data, granularity) : null;
-  const plotData = base ? makeMovingAverageForecast(base, horizon, window) : null;
   const [horizon, setHorizon] = useState(14);
   const [window, setWindow] = useState(7);
+
+  const base = data ? aggregateSales(data, granularity) : null;
+  const plotData = base ? makeMovingAverageForecast(base, horizon, window) : null;
 
   async function loadSample() {
     setError(null);
@@ -140,7 +142,7 @@ export default function App() {
             {data && (
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="text-sm text-neutral-600">
-                  Horizon (days)
+                  Horizon (periods)
                   <input
                     className="mt-1 w-full rounded-xl border px-3 py-2"
                     type="number"
@@ -164,8 +166,8 @@ export default function App() {
                 </label>
 
                 <div className="text-sm text-neutral-600 flex items-end">
-                  <div className="rounded-xl border bg-white px-3 py-2 w-full">
-                    Forecast: simple moving average
+                  <div className="w-full rounded-xl border bg-white px-3 py-2">
+                    Forecast model: moving average
                   </div>
                 </div>
               </div>
@@ -176,9 +178,9 @@ export default function App() {
                 <KpiGrid kpis={computeSalesKpis(data)} />
               </div>
             )}
-            {data && (
+            {plotData && (
               <div className="mt-6">
-                {chartData && <ChartSales data={chartData} />}
+                <ChartSales data={plotData} />
               </div>
             )}
 
