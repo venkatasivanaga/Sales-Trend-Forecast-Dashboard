@@ -14,10 +14,22 @@ export function parseSalesCsv(csvText: string): SalesRow[] {
     throw new Error(msg);
   }
 
-  const rows = (parsed.data as any[]).map((r) => ({
-    date: String(r.date ?? "").trim(),
-    sales: Number(r.sales),
-  }));
+const norm = (obj: Record<string, any>) => {
+  const out: Record<string, any> = {};
+  for (const k of Object.keys(obj)) out[k.trim().toLowerCase()] = obj[k];
+  return out;
+};
+
+const rows = (parsed.data as any[]).map((raw) => {
+    const r = norm(raw);
+    const dateVal = r["date"] ?? r["orderdate"];
+    const salesVal = r["sales"] ?? r["revenue"] ?? r["amount"];
+    return {
+        date: String(dateVal ?? "").trim(),
+        sales: Number(salesVal),
+    };
+});
+
 
   const cleaned = rows
     .filter((r) => r.date && Number.isFinite(r.sales))

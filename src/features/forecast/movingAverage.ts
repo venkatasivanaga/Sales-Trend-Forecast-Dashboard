@@ -30,8 +30,7 @@ function addWeeks(isoWeek: string, weeksToAdd: number) {
 
   week += weeksToAdd;
 
-  // normalize week overflow/underflow (approx, good enough for UI)
-  // 53-week years exist; we'll clamp using 52 to avoid complex calendar logic.
+  // normalize overflow; good enough for UI (handles most cases)
   while (week > 52) {
     week -= 52;
     year += 1;
@@ -46,7 +45,7 @@ function addWeeks(isoWeek: string, weeksToAdd: number) {
 function nextKey(lastKey: string, g: Granularity, i: number) {
   if (g === "daily") return addDays(lastKey, i);
   if (g === "weekly") return addWeeks(lastKey, i);
-  return addMonths(lastKey, i); // monthly: YYYY-MM
+  return addMonths(lastKey, i);
 }
 
 export function makeMovingAverageForecast(
@@ -64,13 +63,11 @@ export function makeMovingAverageForecast(
 
   const lastKey = data[n - 1].date;
 
-  // actual points
   const out: ForecastPoint[] = data.map((r) => ({
     date: r.date,
     actual: r.sales,
   }));
 
-  // forecast points beyond last key
   for (let i = 1; i <= horizon; i++) {
     const start = Math.max(0, values.length - window);
     const ma = avg(values.slice(start));
