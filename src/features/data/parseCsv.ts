@@ -73,15 +73,16 @@ export function parseSalesCsv(csvText: string): SalesRow[] {
     };
   });
 
-  const cleaned = rows
-    .filter((r) => r.date && Number.isFinite(r.sales))
-    .sort((a, b) => a.date.localeCompare(b.date));
+// Aggregate duplicate dates by summing sales (common in transaction-level exports)
+const aggregatedMap = new Map<string, number>();
+for (const r of cleaned) {
+  aggregatedMap.set(r.date, (aggregatedMap.get(r.date) ?? 0) + r.sales);
+}
 
-  if (!cleaned.length) {
-    throw new Error(
-      "No valid rows found. Expected a date column (date/orderdate) and a numeric sales column (sales/revenue)."
-    );
-  }
+const aggregated = Array.from(aggregatedMap.entries())
+  .map(([date, sales]) => ({ date, sales }))
+  .sort((a, b) => a.date.localeCompare(b.date));
 
-  return validateSalesRows(cleaned);
+return validateSalesRows(aggregated);
+
 }
